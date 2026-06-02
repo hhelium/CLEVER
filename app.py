@@ -737,7 +737,7 @@ def render_2d_graph(graph_nx: nx.Graph):
 
 
 # ============================================================
-# OpenRouter client
+# Gemini client
 # ============================================================
 class LLMClient:
     def __init__(self, model: str, api_key: str, timeout: int = DEFAULT_TIMEOUT_SECONDS):
@@ -929,27 +929,32 @@ with st.sidebar:
             '<div class="status-pill warn-pill">Gemma 4 offline</div>',
             unsafe_allow_html=True,
         )
-        st.caption(msg)
 
-
+    # Fixed internal limits — not visible in the interface
     file_limit = 20
     focus_hops = 10
     max_nodes = 300
 
+    st.subheader("Files")
+    uploaded_files = st.file_uploader(
+        "Upload scientific files",
+        type=[ext.replace(".", "") for ext in SUPPORTED_EXTENSIONS],
+        accept_multiple_files=True,
+        label_visibility="collapsed",
+    )
+
+    build_clicked = st.button("Build Sci-KG", use_container_width=True)
+
     st.subheader("Sci-KG Stats")
     col1, col2 = st.columns(2)
+
     with col1:
         st.metric("Files", summary_files)
         st.metric("Variables", summary_vars)
+
     with col2:
         st.metric("Equations", summary_eqs)
         st.metric("Edges", summary_edges)
-
-    # with st.expander("Debug"):
-    #     key = get_gemini_api_key()
-    #     st.caption(f"Key loaded: {bool(key)}")
-    #     st.caption(f"Key prefix: {key[:12] if key else 'N/A'}")
-    #     st.caption(f"Model: {GEMINI_MODEL}")
 
     if st.button("Reset graph", use_container_width=True):
         st.session_state.graph_data = empty_graph()
@@ -970,15 +975,6 @@ llm_client = LLMClient(
 left_col, right_col = st.columns([0.82, 2.18], gap="small")
 
 with left_col:
-    st.subheader("Files")
-    uploaded_files = st.file_uploader(
-        "Upload scientific files",
-        type=[ext.replace(".", "") for ext in SUPPORTED_EXTENSIONS],
-        accept_multiple_files=True,
-        label_visibility="collapsed",
-    )
-    build_clicked = st.button("Build Sci-KG", use_container_width=True)
-
     graph = st.session_state.graph_data
 
     st.subheader("Chat")
